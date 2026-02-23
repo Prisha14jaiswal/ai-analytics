@@ -1,0 +1,94 @@
+2026-01-20T18:29:24.513Z INFO SharedStateManager initialized
+2026-01-20T18:29:24.516Z INFO Is remote: false
+2026-01-20T18:29:24.517Z INFO Starting Local. Installation path: undefined
+2026-01-20T18:29:24.518Z INFO [MainProvider] Creating new MainProvider instance...
+2026-01-20T18:29:24.533Z INFO Installation path exists: c:\Users\KIIT\Desktop\MY DOCUMENTS\ANALYST PROJECT\E_Commerce Analysis
+2026-01-20T18:29:24.536Z INFO Initializing database with URL: file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db
+2026-01-20T18:29:24.549Z INFO New database detected, running full prisma setup...
+2026-01-20T18:29:24.556Z INFO [c:\Users\KIIT\.vscode\extensions\pythagoratechnologies.pythagora-vs-code-2.5.26] Project root:
+2026-01-20T18:29:24.559Z INFO [c:\Users\KIIT\.vscode\extensions\pythagoratechnologies.pythagora-vs-code-2.5.26\prisma\schema.prisma] Schema path:
+2026-01-20T18:29:24.560Z INFO [file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db] Database URL:
+2026-01-20T18:29:24.561Z INFO [true] Schema exists:
+2026-01-20T18:29:24.562Z INFO Running prisma generate first...
+2026-01-20T18:29:52.128Z INFO [Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (6.18.0) to .\src\generated\prisma in 1.33s
+
+] Prisma generate result:
+2026-01-20T18:29:52.131Z INFO Running prisma db push to sync schema...
+2026-01-20T18:30:00.665Z INFO [Prisma schema loaded from prisma\schema.prisma
+Datasource "db": SQLite database "pythagora.db" at "file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db"
+
+SQLite database pythagora.db created at file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db
+
+Your database is now in sync with your Prisma schema. Done in 274ms
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (6.18.0) to .\src\generated\prisma in 1.00s
+
+] Prisma db push result:
+2026-01-20T18:30:00.667Z INFO Database initialized successfully
+2026-01-20T18:30:01.520Z INFO [Migration] Checking for database migration...
+2026-01-20T18:30:05.105Z INFO [Migration] No migration needed
+2026-02-22T09:55:57.129Z INFO Is remote: false
+2026-02-22T09:55:57.131Z INFO Starting Local. Installation path: undefined
+2026-02-22T09:55:57.132Z INFO [MainProvider] Creating new MainProvider instance...
+2026-02-22T09:55:57.135Z INFO [TabsManager] Code view listener set up at initialization
+2026-02-22T09:55:57.136Z INFO Installation path exists: c:\Users\KIIT\Desktop\MY DOCUMENTS\ANALYST PROJECT\ai_analytics_app
+2026-02-22T09:55:57.138Z INFO Initializing database with URL: file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db
+2026-02-22T09:55:57.145Z INFO New database detected, running full prisma setup...
+2026-02-22T09:55:57.147Z INFO [c:\Users\KIIT\.vscode\extensions\pythagoratechnologies.pythagora-vs-code-2.6.19] Project root:
+2026-02-22T09:55:57.147Z INFO [c:\Users\KIIT\.vscode\extensions\pythagoratechnologies.pythagora-vs-code-2.6.19\prisma\schema.prisma] Schema path:
+2026-02-22T09:55:57.148Z INFO [file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db] Database URL:
+2026-02-22T09:55:57.149Z INFO [true] Schema exists:
+2026-02-22T09:55:57.156Z INFO Running prisma generate first...
+2026-02-22T09:56:16.748Z INFO [Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (6.19.1) to .\src\generated\prisma in 1.04s
+
+] Prisma generate result:
+2026-02-22T09:56:16.749Z INFO Running prisma db push to sync schema...
+2026-02-22T09:56:32.071Z INFO [Prisma schema loaded from prisma\schema.prisma
+Datasource "db": SQLite database "pythagora.db" at "file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db"
+
+SQLite database pythagora.db created at file:C:\Users\KIIT\AppData\Local\Temp\pythagora-temp\pythagora.db
+
+Your database is now in sync with your Prisma schema. Done in 337ms
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (6.19.1) to .\src\generated\prisma in 1.58s
+
+] Prisma db push result:
+2026-02-22T09:56:32.072Z INFO Database initialized successfully
+2026-02-22T09:56:32.073Z INFO [Migration] Checking for database migration...
+2026-02-22T09:56:36.519Z INFO [Migration] No migration needed
+2026-02-23T10:12:47.211Z INFO Closing entire Pythagora extension...
+2026-02-23T10:12:47.283Z ERROR Error closing extension
+Error: Canceled
+Stack: Canceled: Canceled
+	at new OU (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:29:120707)
+	at AE.U (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:29:125317)
+	at s.<computed>.n.charCodeAt.s.<computed> (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:29:122811)
+	at mA.g (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:116:41231)
+	at mA.executeCommand (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:116:40735)
+	at Object.executeCommand (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:213:102115)
+	at closeEntirePythagoraExtension (c:\Users\KIIT\.vscode\extensions\pythagoratechnologies.pythagora-vs-code-2.6.19\out\extension.js:542:31)
+	at Object.deactivate (c:\Users\KIIT\.vscode\extensions\pythagoratechnologies.pythagora-vs-code-2.6.19\out\extension.js:409:15)
+	at kK.eb (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:120:11850)
+	at file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:120:10000
+	at Array.map (<anonymous>)
+	at kK.$ (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:120:9988)
+	at kK.terminate (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:120:10231)
+	at UM.terminate (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:122:914)
+	at _s (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:405:11135)
+	at MessagePortMain.<anonymous> (file:///c:/Users/KIIT/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:405:7610)
+	at MessagePortMain.emit (node:events:519:28)
+	at MessagePortMain.emit (node:domain:489:12)
+	at MessagePortMain._internalPort.emit (node:electron/js2c/utility_init:2:2959)
+	at Object.topLevelDomainCallback (node:domain:161:15)
+	at Object.callbackTrampoline (node:internal/async_hooks:128:24)
+Extra context: {
+  "message": "Canceled"
+}

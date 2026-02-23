@@ -1,0 +1,241 @@
+# Universal AI Analytics Assistant: Technical Master Document
+
+## 1. Executive Summary
+The **Universal AI Analytics Assistant** is a production-grade, modular Streamlit application designed to democratize data science. It transforms raw CSV data into actionable insights through an integrated suite of features including automated schema analysis, Retrieval-Augmented Generation (RAG) for localized knowledge, a LangChain-powered Data Agent for live Pandas execution, and an automated Machine Learning (AutoML) pipeline for predictive modeling.
+
+**Why it was built:** 
+To bridge the gap between technical data engineering and business decision-making. Traditional BI tools require steep learning curves; this assistant allows users to converse with their data in natural language while maintaining the rigor of mathematical validation and safe code execution.
+
+**Business Value:**
+- **Efficiency:** Reduces the time for initial data exploration from hours to seconds.
+- **Accessibility:** Enables non-technical stakeholders to perform complex joins and aggregations.
+- **Reliability:** Uses LLMs for reasoning but grounds them in deterministic code execution (Pandas) and local context (RAG).
+
+---
+
+## 2. High-Level Architecture
+
+### Component Diagram
+```text
+[ User Interface ] <---- (Streamlit) ----> [ Session State ]
+       |                                          |
+       |------------------------------------------|
+       v                                          v
+[ File Handler ]                        [ Orchestration Layer ]
+(Pandas Upload)                         (Logic Routing)
+       |                                          |
+       |----------[ Schema Analyzer ]-------------|
+       |          (Statistics & Metrics)          |
+       |                                          |
+       |----------[ RAG System ]------------------|
+       |          (FAISS + Embeddings)            |
+       |                                          |
+       |----------[ Data Agent ]------------------|
+       |          (LangGraph + ReAct)             |
+       |                                          |
+       |----------[ ML Module ]-------------------|
+       |          (scikit-learn)                  |
+       v                                          v
+[ Visualization Engine ] <--- (JSON Spec) --- [ LLM Processor ]
+(Matplotlib Renderer)                           (Groq/OpenAI)
+```
+
+### Data Flows
+1.  **Upload Flow:** CSV -> `pd.read_csv` -> `st.session_state` -> Schema Analysis.
+2.  **Schema Flow:** DataFrame -> `analyze_schema()` -> JSON Summary -> Markdown Report.
+3.  **RAG Flow:** Markdown Report -> Chunking -> Vector Store (FAISS) -> Retrieval -> Prompt -> Answer.
+4.  **Agent Flow:** User Query -> LangGraph ReAct -> PythonAstREPL (df) -> Code Exec -> Result -> Markdown/JSON.
+5.  **Visualization Flow:** Agent/LLM -> Structured JSON Spec -> Column Validation -> Matplotlib -> Streamlit.
+
+---
+
+## 3. Folder & File Structure
+
+```text
+ai_analytics_app/
+├── app.py                  # Main UI, navigation, and visualization rendering.
+├── schema_analyzer.py      # Core logic for dataset profiling and report generation.
+├── .env                    # API keys and provider configurations.
+├── agent/
+│   ├── __init__.py
+│   └── dataframe_agent.py  # LangGraph ReAct agent with PythonAstREPLTool.
+├── rag/
+│   ├── __init__.py
+│   ├── build_vector_store.py # FAISS indexing and embedding logic.
+│   └── rag_pipeline.py     # Retrieval-QA chain implementation.
+└── ml/
+    ├── __init__.py
+    └── auto_trainer.py     # scikit-learn training and evaluation pipeline.
+```
+
+---
+
+## 4. CSV Upload Handling
+- **Storage:** Files are read directly into memory as Pandas DataFrames. No persistent disk storage is used for the dataset to ensure privacy and speed.
+- **Lifecycle:** The DataFrame resides in `st.session_state`. When a new file is uploaded, the state is cleared (`session_state.pop`) for the summary, RAG index, and agent to prevent cross-contamination between datasets.
+- **Validation:** Basic `pd.read_csv` error handling is used to catch malformed files.
+
+---
+
+## 5. Schema Analyzer Logic
+The `analyze_schema()` function performs a comprehensive sweep of the dataset:
+- **Metrics:** Rows, Columns, Memory usage (deep inspection), and Null counts.
+- **Types:** Automatic detection of Numeric, Categorical, and Datetime columns.
+- **Handling Missing Values:** Computes total missing and percentages per column.
+- **Summarization:** 
+    - **Numeric:** Uses `df.describe()` for mean, median, quartiles, and std.
+    - **Categorical:** Performs `value_counts()` to identify top 5 values and unit counts.
+- **Edge Cases:** Handles empty datasets and single-column files gracefully.
+
+---
+
+## 6. RAG System
+- **Source Material:** The system does not index the raw CSV (which would be inefficient and risky for context windows). Instead, it indexes the **Dataset Analysis Report** generated by the Schema Analyzer.
+- **Chunking:** `RecursiveCharacterTextSplitter` targets section boundaries (`\n======`) first. Chunk size: 800, Overlap: 150.
+- **Embeddings:** Defaults to local `sentence-transformers/all-MiniLM-L6-v2` (CPU-optimized) or `text-embedding-3-small` (OpenAI).
+- **Storage:** In-memory FAISS index.
+- **Retrieval:** $k=4$ chunks used in the context.
+- **Limitations:** Cannot answer row-specific questions (e.g., "What did Customer X buy?"); it only knows dataset-wide patterns.
+
+---
+
+## 7. Data Agent System
+Advanced implementation using **LangGraph**'s `create_react_agent`:
+- **Tools:** `PythonAstREPLTool` is restricted to the local DataFrame `df` and the `pd` module. `import` statements are strictly forbidden.
+- **Prompt Engineering:**
+    - **Analytical Protocol:** Forces the LLM to calculate percentiles (25th/75th) before defining terms like "High" or "Low".
+    - **No Hallucination:** Instructions explicitly forbid making up entity IDs; it must retrieve them from `df`.
+- **Structured Output:** For non-visual responses, it follows a 3-section structure: Metric Computation, Filtered Results, and Interpretation.
+- **Quantitative Thresholds:** Moves away from vague "high value" queries to mathematical definitions based on the 75th percentile.
+
+---
+
+## 8. Visualization Engine
+The project uses a **Deterministic Visualization Agent** pattern:
+1.  **Intent Detection:** Triggered by keywords like "show", "plot", or "visualize".
+2.  **JSON Enforcement:** The agent is instructed to return *only* raw JSON conforming to a specific schema.
+3.  **Safe Parsing:** `app.py` uses Regex to extract JSON even if the LLM includes markdown backticks.
+4.  **Column Validation:** Before plotting, the engine checks if the requested columns exist in `df.columns`.
+5.  **Aggregation:** Support for `sum`, `mean`, `count`, `min`, `max`.
+6.  **Chart Types:** Bar (with top 15 sorting), Line (with temporal sorting), Histograms (20 bins), and Scatter plots ($alpha$-blended).
+7.  **Fallback:** If JSON parsing fails but intent was there, a warning is shown with raw agent response for debugging.
+
+---
+
+## 9. Security Considerations
+- **No `eval()`:** The `PythonAstREPLTool` parses the Abstract Syntax Tree (AST), which is safer than raw `exec()` or `eval()`.
+- **Sandboxing:** Only `df` and `pd` are provided in the tool's scope. System-level modules like `os` or `subprocess` are blocked.
+- **Temperature=0:** All LLM calls use zero temperature to ensure reproducibility and prevent "creative" (and potentially dangerous) code generation.
+- **Structured Output:** Forcing JSON for charts prevents the LLM from trying to generate or execute arbitrary Matplotlib code directly, which could be exploited.
+
+---
+
+## 10. Error Handling
+- **Missing Columns:** Caught by `render_visualization`.
+- **JSON Parse Failure:** Handled by `try-except` with structured fallback reporting.
+- **Empty Dataset:** Validated in UI (`st.stop()`) before RAG or Agent initialization.
+- **LLM Hallucination:** Mitigated by including a full schema (name, type, non-null count, sample values) in every Agent prompt.
+
+---
+
+## 11. Design Trade-offs
+- **scikit-learn vs Deep Learning:** Chose scikit-learn for speed, interpretability, and lower deployment overhead. Deep learning is overkill for tabular classification on small-to-medium datasets.
+- **RAG vs Agent:** 
+    - **RAG** covers global metadata (schema, missing values). 
+    - **Agent** covers local analysis (sum of prices, top customers). 
+    - This hybrid approach saves tokens and increases accuracy.
+- **Matplotlib vs Plotly:** Chose Matplotlib for its stability and ease of rendering via `st.pyplot`. While Plotly is interactive, Matplotlib is more robust for LLM-generated specs.
+
+---
+
+## 12. Known Weaknesses
+- **Reasoning Limits:** Multi-step logical reasoning (e.g., "Find the top 5 customers and then tell me their average delivery time by month") can sometimes confuse the ReAct chain.
+- **Synonym Mapping:** If the user asks for "Revenue" but the column is named `total_sales`, the agent might struggle unless highlighted in the sample values.
+- **Memory Scaling:** Since the DataFrame is in memory, files $>500$MB may lead to OOM (Out of Memory) errors on standard Streamlit Cloud instances.
+
+---
+
+## 13. Performance Considerations
+- **Memory:** `df.memory_usage(deep=True)` is used for accurate reporting.
+- **FAISS Scaling:** FAISS is highly efficient for small text indices; retrieval time is negligible ($<10$ms).
+- **Latency:** LLM inference (especially on Groq) is the primary bottleneck, typically taking 1-3 seconds.
+
+---
+
+## 14. Deployment Considerations
+- **Streamlit Cloud:** Native support. Requires `requirements.txt` with `langchain`, `faiss-cpu`, `scikit-learn`.
+- **Secrets Management:** `GROQ_API_KEY` or `OPENAI_API_KEY` must be configured in secrets.
+- **Session Lifecycle:** App restarts clear the dataframe; no persistent persistence is intentional for user data security.
+
+---
+
+## 15. Future Improvements
+- **Interactive Visuals:** Transitioning the JSON spec to support Plotly.
+- **Tool-based Deterministic Agent:** Moving from `PythonAstREPLTool` to a set of pre-defined tools (e.g., `get_top_n`, `calc_correlation`) to further reduce execution risk.
+- **Dashboard Mode:** Persistent charting area where LLM-generated charts can be "pinned".
+- **Column Synonym Mapping:** Using an LLM-powered preprocessing step to map user terms to exact column names.
+
+---
+
+## 16. Interview Q&A Section
+
+### Architecture & Strategy
+**Q1: Why use a hybrid RAG + Agent approach?**
+**A:** RAG is optimized for retrieving static information from a document (the schema report), which is token-efficient. The Agent is optimized for dynamic computation on the raw data. Using RAG for metadata prevents the Agent from wasting execution cycles on questions like "What are the column names?"
+
+**Q2: How do you handle LLM hallucinations in column names?**
+**A:** I pass a compressed schema representation (Name, Dtype, Non-null count, and a sample value) into the system prompt. This acts as a "grounding" mechanism for the LLM.
+
+**Q3: Why use LangGraph for the Agent instead of standard LangChain Agents?**
+**A:** LangGraph provides finer control over the ReAct loop and makes it easier to inspect internal states and customize how tools are called, leading to more predictable behavior in production.
+
+### Security & Reliability
+**Q4: How do you prevent Prompt Injection from executing `rm -rf /`?**
+**A:** I use the `PythonAstREPLTool` which parses code into an AST and executes it in a restricted namespace. It doesn't have access to the `os` module or the file system. Furthermore, the system prompt explicitly forbids imports.
+
+**Q5: What happens if the LLM generates an invalid JSON for a chart?**
+**A:** The `app.py` logic includes a regex-based JSON extractor and a fallback validator. If it fails, the system catches the exception and displays the raw text as a standard response, alongside a warning that the visualization failed.
+
+**Q6: Why is Temperature set to 0?**
+**A:** In data analysis, variance is a bug, not a feature. We need deterministic code and mathematical accuracy. Temperature 0 ensures the LLM's logic remains consistent across multiple runs.
+
+### Data Science & ML
+**Q7: Your ML trainer only uses numeric columns. Why?**
+**A:** It's a design choice for stability in an automated context. Categorical encoding (One-Hot) can explode the feature space and cause dimensionality issues. Using numeric columns + Label Encoding for the target is a safe "MVP" for automated modeling.
+
+**Q8: How do you handle class imbalance in the ML module?**
+**A:** The `train_test_split` uses `stratify=y` (if the number of unique classes is $<20$) to ensure that the distribution of target classes remains consistent between the training and testing sets.
+
+**Q9: Why use the median instead of the mean for filling missing values?**
+**A:** Median is more robust to outliers. In a "Universal" assistant where the dataset distribution is unknown, the median is a safer default than the mean.
+
+### Performance & Scaling
+**Q10: What is the largest dataset this app can handle?**
+**A:** This is limited by available RAM. On a standard 1GB container, once you account for Python overhead and the Deep DataFrame copy, practical limits are around 100-200MB or $\approx 1M$ rows.
+
+**Q11: Is FAISS-CPU fast enough for this application?**
+**A:** Yes. Since we are only indexing a summary report ($\approx 10-20$ chunks), retrieval is nearly instantaneous. The overhead of FAISS-GPU or a cloud vector DB would be unnecessary complexity.
+
+**Q12: How do you handle very wide datasets (100+ columns)?**
+**A:** The system prompt truncates the column list if it's too long to fit in the context window. In the future, I would implement a "Column Search" tool where the agent can search for relevant columns before computing.
+
+### General Engineering
+**Q13: How do you handle session persistence in Streamlit?**
+**A:** I don't. The app is stateless by design. This ensures user data isn't leaked across sessions and that every "session" starts with a clean slate.
+
+**Q14: What metrics do you use to evaluate the Agent's performance?**
+**A:** During development, I used a set of "Gold Standard" queries for a known dataset (e.g., Iris or Titanic) and verified if the code executed correctly and the answers matched deterministic results.
+
+**Q15: If you had to add a feature to make this SaaS-ready, what would it be?**
+**A:** User Authentication and S3-backed persistent storage. Currently, it's a local-first utility; SaaS would require managing storage and costs for API tokens per user.
+
+---
+
+## 17. Summary
+The **Universal AI Analytics Assistant** demonstrates high-level engineering skills in:
+- **Systems Design:** Coordinating four distinct AI capabilities into a unified UI.
+- **Safety Engineering:** Implementing restricted code execution and structured output parsing.
+- **Data Engineering:** Automated profiling and cleaning of unknown schemas.
+- **LLM Orchestration:** Advanced use of LangGraph and RAG patterns.
+
+This project is a testament to the power of combining modern AI reasoning with robust, deterministic data processing tools.
